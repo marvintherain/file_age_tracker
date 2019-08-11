@@ -3,6 +3,8 @@ use std::path::{Path, PathBuf};
 use std::fs;
 
 use walkdir::WalkDir;
+use timeago;
+
 
 #[macro_use] extern crate prettytable;
 use prettytable::{Table, Row, Cell};
@@ -22,13 +24,14 @@ impl File {
             time_since_creation: creation_date.elapsed().unwrap(),
         }
     }
+    //to-do method to reformat duration
 }
 
 //--------------------------------------------------
 
 fn main() {
     //to-do: take path as command line param
-    let dir: &Path = Path::new("C://users//danie//Desktop//testdir//");
+    let dir: &Path = Path::new("C://users//danie//Desktop//Scans//");
     
     let entries = read_folder_content(dir);
 
@@ -40,13 +43,19 @@ fn main() {
     let mut table = Table::new();
 
     println!("\nfiles that exceed creation date parameter");
-    table.add_row(row!["path", "filename"]);
+    table.add_row(row!["path", "filename", "time since creation"]);
     for entry in &filtered_entries {
-        table.add_row(row![entry.path.parent().unwrap().to_str().unwrap(),
-            entry.path.file_name().unwrap().to_str().unwrap()
+        let f = timeago::Formatter::new();
+
+        table.add_row(row![entry.path.parent().unwrap().canonicalize().unwrap().to_str().unwrap(),
+            entry.path.file_name().unwrap().to_str().unwrap(),
+            f.convert(entry.time_since_creation)
         ]);
+
     }
     table.printstd();
+
+    //to-do offer deletion per command line, implement delete function
     // fs::remove_file(&filtered_entries[0].path).expect("Could not delete");
 }
 
