@@ -1,9 +1,11 @@
 use std::time::{SystemTime, Duration};
 use std::path::{Path, PathBuf};
 use std::fs;
+use std::io;
 
 use walkdir::WalkDir;
 use timeago;
+use regex::Regex;
 
 
 #[macro_use] extern crate prettytable;
@@ -24,19 +26,32 @@ impl File {
             time_since_creation: creation_date.elapsed().unwrap(),
         }
     }
-    //to-do method to reformat duration
+
+    fn get_path(&self) -> String {
+        self.path.parent().unwrap().to_str().unwrap().replace("//", "/")
+    }
+
+    fn get_file_name(&self) -> String {
+        self.path.file_name().unwrap().to_str().unwrap().to_string()
+    }
+
+    fn get_time_since_creation(&self) -> String {
+        let f = timeago::Formatter::new();
+        f.convert(self.time_since_creation)
+    }
 }
 
 //--------------------------------------------------
 
 fn main() {
     //to-do: take path as command line param
-    let dir: &Path = Path::new("C://users//danie//Desktop//Scans//");
+    //to-do: implement logging
+    let dir: &Path = Path::new("C://users//danie//Desktop//testdir//");
     
     let entries = read_folder_content(dir);
 
     //to-do: except comparison param from command line
-    let compare_param = Duration::new(60000, 0);
+    let compare_param = Duration::new(6000, 0);
 
     let filtered_entries = filter_files(entries, compare_param);
     
@@ -45,15 +60,29 @@ fn main() {
     println!("\nfiles that exceed creation date parameter");
     table.add_row(row!["path", "filename", "time since creation"]);
     for entry in &filtered_entries {
-        let f = timeago::Formatter::new();
-
-        table.add_row(row![entry.path.parent().unwrap().canonicalize().unwrap().to_str().unwrap(),
-            entry.path.file_name().unwrap().to_str().unwrap(),
-            f.convert(entry.time_since_creation)
+        table.add_row(row![entry.get_path(),
+            entry.get_file_name(),
+            entry.get_time_since_creation()
         ]);
 
     }
     table.printstd();
+    println!("\ndo you want to delete the files listed? yes / no");
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input).expect("line could not be read");
+
+    let re_yes = Regex::new(r"\s?yes\s?").unwrap();
+    let re_no = Regex::new(r"\s?no\s?").unwrap();
+
+    if re_yes.is_match(&input) == true {
+        println!("files deleted");
+    } else if re_no.is_match(&input) {
+        println!("no action taken");
+    }
+    else {
+        println!("command not found");
+    };
 
     //to-do offer deletion per command line, implement delete function
     // fs::remove_file(&filtered_entries[0].path).expect("Could not delete");
