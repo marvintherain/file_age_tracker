@@ -46,12 +46,12 @@ impl File {
 fn main() {
     //to-do: take path as command line param
     //to-do: implement logging
-    let dir: &Path = Path::new("C://users//danie//Desktop//testdir//");
+    let dir: &Path = Path::new("C://users//danie//Desktop//Scans - Kopie//");
     
     let entries = read_folder_content(dir);
 
     //to-do: except comparison param from command line
-    let compare_param = Duration::new(6000, 0);
+    let compare_param = Duration::new(10, 0);
 
     let filtered_entries = filter_files(entries, compare_param);
     
@@ -67,7 +67,8 @@ fn main() {
 
     }
     table.printstd();
-    println!("\ndo you want to delete the files listed? yes / no");
+    println!("\ndo you want to delete the files listed? yes / no
+(deleted files will not appear in trash!)");
 
     let mut input = String::new();
     io::stdin().read_line(&mut input).expect("line could not be read");
@@ -76,7 +77,7 @@ fn main() {
     let re_no = Regex::new(r"\s?no\s?").unwrap();
 
     if re_yes.is_match(&input) == true {
-        println!("files deleted");
+        delete_files(filtered_entries);
     } else if re_no.is_match(&input) {
         println!("no action taken");
     }
@@ -84,11 +85,18 @@ fn main() {
         println!("command not found");
     };
 
-    //to-do offer deletion per command line, implement delete function
-    // fs::remove_file(&filtered_entries[0].path).expect("Could not delete");
 }
 
 //--------------------------------------------------
+
+fn delete_files(entries: Vec<File>) {
+    for entry in entries {
+        fs::remove_file(entry.path)
+            .expect("deletion failed");
+    }; 
+
+    println!("listed files were deleted");
+}
 
 fn filter_files(entries: Vec<File>, compare_param: Duration) -> Vec<File> {
     let filtered_entries: Vec<File> = entries
