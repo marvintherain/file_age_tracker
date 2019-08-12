@@ -9,7 +9,8 @@ use regex::Regex;
 
 
 #[macro_use] extern crate prettytable;
-use prettytable::{Table, Row, Cell};
+// use prettytable::{Table, Row, Cell};
+use prettytable::{Table};
 
 #[derive(Debug)]
 struct File {
@@ -79,10 +80,19 @@ fn main() {
     if re_yes.is_match(&input) == true {
         delete_files(filtered_entries);
     } else if re_no.is_match(&input) {
-        println!("no action taken");
+        println!("--> no action taken");
+        println!("should the listed files be flagged in filename (*_flagged.*)?");
+
+        io::stdin().read_line(&mut input).expect("line could not be read");
+        
+        if re_yes.is_match(&input) == true {
+            println!("--> files have been flagged");
+        } else if re_no.is_match(&input) {
+            println!("--> no action taken");
+        }
     }
     else {
-        println!("command not found");
+        println!("--> command not found");
     };
 
 }
@@ -95,7 +105,7 @@ fn delete_files(entries: Vec<File>) {
             .expect("deletion failed");
     }; 
 
-    println!("listed files were deleted");
+    println!("--> listed files were deleted");
 }
 
 fn filter_files(entries: Vec<File>, compare_param: Duration) -> Vec<File> {
