@@ -6,10 +6,9 @@ use std::io;
 use walkdir::WalkDir;
 use timeago;
 use regex::Regex;
-
+use clap::{Arg, App};
 
 #[macro_use] extern crate prettytable;
-// use prettytable::{Table, Row, Cell};
 use prettytable::{Table};
 
 #[derive(Debug)]
@@ -46,56 +45,71 @@ impl File {
 
 fn main() {
     //to-do: take path as command line param
+    let matches = App::new("file age tracker")
+        .version("0.1")
+        .author("Daniel Markow")
+        .about("Tracks your files age and then offers to delete or flag them")
+        .arg(Arg::with_name("path")
+            .short("p")
+            .long("path")
+            .takes_value(true)
+            .help("Add the path to the folder of file you want to track"))
+        .get_matches();
+    
+    let path = matches.value_of("path");
+
+    if let Some(s) = path {
     //to-do: implement logging
-    let dir: &Path = Path::new("C://users//danie//Desktop//Scans - Kopie//");
-    
-    let entries = read_folder_content(dir);
 
-    //to-do: except comparison param from command line
-    let compare_param = Duration::new(10, 0);
+        let dir: &Path = Path::new(s);
+        
+        let entries = read_folder_content(dir);
 
-    let filtered_entries = filter_files(entries, compare_param);
-    
-    let mut table = Table::new();
+        let compare_param = Duration::new(10, 0);
 
-    println!("\nfiles that exceed creation date parameter");
-    table.add_row(row!["path", "filename", "time since creation"]);
-    for entry in &filtered_entries {
-        table.add_row(row![entry.get_path(),
-            entry.get_file_name(),
-            entry.get_time_since_creation()
-        ]);
+        let filtered_entries = filter_files(entries, compare_param);
+        
+        let mut table = Table::new();
 
-    }
-    table.printstd();
-    println!("\ndo you want to delete the files listed? yes / no
+        println!("\nfiles that exceed creation date parameter in folder {}\\", s.to_string());
+        table.add_row(row!["path", "filename", "time since creation"]);
+        for entry in &filtered_entries {
+            table.add_row(row![entry.get_path(),
+                entry.get_file_name(),
+                entry.get_time_since_creation()
+            ]);
+
+        }
+        table.printstd();
+        println!("\ndo you want to delete the files listed? yes / no
 (deleted files will not appear in trash!)");
 
-    let mut input = String::new();
-    io::stdin().read_line(&mut input).expect("line could not be read");
-
-    let re_yes = Regex::new(r"\s?yes\s?").unwrap();
-    let re_no = Regex::new(r"\s?no\s?").unwrap();
-
-    if re_yes.is_match(&input) == true {
-        delete_files(filtered_entries);
-    } else if re_no.is_match(&input) {
-        println!("--> no action taken");
-        println!("should the listed files be flagged in filename (*_flagged.*)?");
-
+        let mut input = String::new();
         io::stdin().read_line(&mut input).expect("line could not be read");
-        
+
+        let re_yes = Regex::new(r"\s?yes\s?").unwrap();
+        let re_no = Regex::new(r"\s?no\s?").unwrap();
+
         if re_yes.is_match(&input) == true {
-            flag_files(filtered_entries);
-            println!("--> files have been flagged");
+            delete_files(filtered_entries);
         } else if re_no.is_match(&input) {
             println!("--> no action taken");
-        }
-    }
-    else {
-        println!("--> command not found");
-    };
+            println!("should the listed files be flagged in filename (*_flagged.*)? yes / no");
 
+            io::stdin().read_line(&mut input).expect("line could not be read");
+            
+            if re_yes.is_match(&input) == true {
+                flag_files(filtered_entries);
+                println!("--> files have been flagged");
+            } else if re_no.is_match(&input) {
+                println!("--> no action taken");
+            }
+        }
+        else {
+            println!("--> command not found");
+        };
+    
+    }   
 }
 
 //--------------------------------------------------
