@@ -86,6 +86,9 @@ fn main() {
         io::stdin().read_line(&mut input).expect("line could not be read");
         
         if re_yes.is_match(&input) == true {
+            for entry in filtered_entries {
+                fs::rename(&entry.path, &entry.path.to_str().unwrap().replace(".", "_flagged.")).unwrap();
+            };
             println!("--> files have been flagged");
         } else if re_no.is_match(&input) {
             println!("--> no action taken");
