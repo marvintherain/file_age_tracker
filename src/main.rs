@@ -86,9 +86,7 @@ fn main() {
         io::stdin().read_line(&mut input).expect("line could not be read");
         
         if re_yes.is_match(&input) == true {
-            for entry in filtered_entries {
-                fs::rename(&entry.path, &entry.path.to_str().unwrap().replace(".", "_flagged.")).unwrap();
-            };
+            flag_files(filtered_entries);
             println!("--> files have been flagged");
         } else if re_no.is_match(&input) {
             println!("--> no action taken");
@@ -101,6 +99,12 @@ fn main() {
 }
 
 //--------------------------------------------------
+
+fn flag_files(entries: Vec<File>) {
+    for entry in entries {
+        fs::rename(&entry.path, &entry.path.to_str().unwrap().replace(".", "_flagged.")).unwrap();
+    }
+}
 
 fn delete_files(entries: Vec<File>) {
     for entry in entries {
