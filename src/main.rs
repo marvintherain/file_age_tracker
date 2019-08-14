@@ -48,12 +48,17 @@ fn main() {
     let matches = App::new("file age tracker")
         .version("0.1")
         .author("Daniel Markow")
-        .about("Tracks your files age and then offers to delete or flag them")
+        .about("Tracks your files' age based on a time parameter and then offers to delete or flag them")
         .arg(Arg::with_name("path")
             .short("p")
             .long("path")
             .takes_value(true)
             .help("Add the path to the folder of file you want to track"))
+        .arg(Arg::with_name("time")
+            .short("t")
+            .long("time")
+            .takes_value(true)
+            .help("Define the cut-off age of the files displayed. Add y for year, d for days, h for hours"))
         .get_matches();
     
     let path = matches.value_of("path");
@@ -64,6 +69,15 @@ fn main() {
         let dir: &Path = Path::new(s);
         
         let entries = read_folder_content(dir);
+        
+        // let time = matches.value_of("time").unwrap();
+        // println!("{:?}", time);
+
+        // let reg_year = Regex::new(r"[0-9]+y").unwrap();
+
+        // if reg_year.is_match(&time) {
+            
+        // }
 
         let compare_param = Duration::new(10, 0);
 
@@ -71,7 +85,7 @@ fn main() {
         
         let mut table = Table::new();
 
-        println!("\nfiles that exceed creation date parameter in folder {}\\", s.to_string());
+        println!("\nfiles that exceed creation date parameter in folder {}", s.to_string());
         table.add_row(row!["path", "filename", "time since creation"]);
         for entry in &filtered_entries {
             table.add_row(row![entry.get_path(),
