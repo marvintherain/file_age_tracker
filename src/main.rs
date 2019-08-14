@@ -79,17 +79,11 @@ fn main() {
         let compare_param: Duration;
 
         if reg_year.is_match(time) {
-            let re = Regex::new(r"[0-9]+").unwrap();
-            let time_parsed = re.find(time).unwrap();
-            compare_param = Duration::new(time[time_parsed.start()..time_parsed.end()].parse::<u64>().unwrap()*31536000,0);
+            compare_param = parse_time_param(time, 31536000);
         } else if reg_day.is_match(time) {
-            let re = Regex::new(r"[0-9]+").unwrap();
-            let time_parsed = re.find(time).unwrap();
-            compare_param = Duration::new(time[time_parsed.start()..time_parsed.end()].parse::<u64>().unwrap()*86400,0);
+            compare_param = parse_time_param(time, 86400);
         } else if reg_hour.is_match(time) {
-            let re = Regex::new(r"[0-9]+").unwrap();
-            let time_parsed = re.find(time).unwrap();
-            compare_param = Duration::new(time[time_parsed.start()..time_parsed.end()].parse::<u64>().unwrap()*3600,0);
+            compare_param = parse_time_param(time, 3600);
         } else {
             panic!("Time parameter not recognized");
         };
@@ -98,7 +92,7 @@ fn main() {
         let filtered_entries = filter_files(entries, compare_param);
         
         let mut table = Table::new();
-
+        //to-do: print actual date of creation?
         println!("\nfiles that exceed creation date parameter in folder {}", s.to_string());
         table.add_row(row!["path", "filename", "time since creation"]);
         for entry in &filtered_entries {
@@ -141,6 +135,12 @@ fn main() {
 }
 
 //--------------------------------------------------
+
+fn parse_time_param(time: &str, mult_param: u64) -> Duration {
+    let re = Regex::new(r"[0-9]+").unwrap();
+    let time_parsed = re.find(time).unwrap();
+    Duration::new(time[time_parsed.start()..time_parsed.end()].parse::<u64>().unwrap()*mult_param,0)
+}
 
 fn flag_files(entries: Vec<File>) {
     for entry in entries {
