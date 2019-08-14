@@ -70,16 +70,30 @@ fn main() {
         
         let entries = read_folder_content(dir);
         
-        // let time = matches.value_of("time").unwrap();
-        // println!("{:?}", time);
+        let time = matches.value_of("time").unwrap();
 
-        // let reg_year = Regex::new(r"[0-9]+y").unwrap();
+        let reg_year = Regex::new(r"[0-9]+y").unwrap();
+        let reg_day = Regex::new(r"[0-9]+d").unwrap();
+        let reg_hour = Regex::new(r"[0-9]+h").unwrap();
 
-        // if reg_year.is_match(&time) {
-            
-        // }
+        let compare_param: Duration;
 
-        let compare_param = Duration::new(10, 0);
+        if reg_year.is_match(time) {
+            let re = Regex::new(r"[0-9]+").unwrap();
+            let time_parsed = re.find(time).unwrap();
+            compare_param = Duration::new(time[time_parsed.start()..time_parsed.end()].parse::<u64>().unwrap()*31536000,0);
+        } else if reg_day.is_match(time) {
+            let re = Regex::new(r"[0-9]+").unwrap();
+            let time_parsed = re.find(time).unwrap();
+            compare_param = Duration::new(time[time_parsed.start()..time_parsed.end()].parse::<u64>().unwrap()*86400,0);
+        } else if reg_hour.is_match(time) {
+            let re = Regex::new(r"[0-9]+").unwrap();
+            let time_parsed = re.find(time).unwrap();
+            compare_param = Duration::new(time[time_parsed.start()..time_parsed.end()].parse::<u64>().unwrap()*3600,0);
+        } else {
+            panic!("Time parameter not recognized");
+        };
+
 
         let filtered_entries = filter_files(entries, compare_param);
         
