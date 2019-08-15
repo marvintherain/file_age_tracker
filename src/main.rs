@@ -44,7 +44,6 @@ impl File {
 //--------------------------------------------------
 
 fn main() {
-    //to-do: take path as command line param
     let matches = App::new("file age tracker")
         .version("0.1")
         .author("Daniel Markow")
